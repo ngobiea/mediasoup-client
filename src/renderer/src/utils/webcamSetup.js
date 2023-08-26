@@ -78,7 +78,6 @@ export const offWebCam = () => {
     store.dispatch(setLocalStream(null));
   }
 };
-
 export const handleOnMic = (value) => {
   console.log(value);
   navigator.mediaDevices
