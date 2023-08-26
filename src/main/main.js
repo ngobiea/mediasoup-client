@@ -2,7 +2,7 @@ const { app, BrowserWindow } = require('electron');
 const windows = require('./windows/windows');
 
 
-// app.setAppUserModelId('mediasoup');
+app.setAppUserModelId('mediasoup');
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
