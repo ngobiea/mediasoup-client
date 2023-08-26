@@ -60,6 +60,7 @@ import {
   setLocalStream,
   setMediaStreams,
   setRemoteSteam,
+  setIsProducer,
 } from './slices/sessionSlice';
 
 import { mediasoupReducer } from './slices/mediasoupSlice';
@@ -146,6 +147,7 @@ export {
   setLocalStream,
   setMediaStreams,
   setRemoteSteam,
+  setIsProducer,
 };
 
 // Account Apis

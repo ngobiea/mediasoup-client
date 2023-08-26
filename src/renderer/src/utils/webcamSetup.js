@@ -3,12 +3,16 @@ import {
   setLocalStream,
   setMediaStreams,
   setVideoEnable,
+  setIsProducer,
 } from '../store';
 const webcamError = 'Error accessing webcam';
 export const onWebCam = (audio, video) => {
+  const { defaultVideoOutputDevice, localStream } = store.getState().session;
+
   navigator.mediaDevices
     .getUserMedia({
-      video: {
+      video:defaultVideoOutputDevice? {
+        deviceId: { ideal: defaultVideoOutputDevice },
         width: {
           min: 560,
           max: 1920,
@@ -17,12 +21,14 @@ export const onWebCam = (audio, video) => {
           min: 400,
           max: 1080,
         },
-      },
+      }:undefined,
       audio: false,
+      
     })
     .then((stream) => {
       store.dispatch(setLocalStream(stream));
       store.dispatch(setMediaStreams(stream));
+      store.dispatch(setIsProducer(true));
     })
     .catch((error) => {
       console.log(webcamError, error);

@@ -11,6 +11,7 @@ const sessionSlice = createSlice({
     isRecording: false,
     activeBorder: '',
     isJoinedSession: false,
+    isProducer: false,
     audioInputDevices: [],
     audioOutputDevices: [],
     videoOutputDevices: [],
@@ -103,6 +104,9 @@ const sessionSlice = createSlice({
     setRemoteSteam(state, action) {
       state.remoteStream = action.payload;
     },
+    setIsProducer(state, action) {
+      state.isProducer = action.payload;
+    },
   },
 });
 
@@ -121,6 +125,7 @@ export const {
   setDevices,
   addRemoteStream,
   setMediaStreams,
-  setRemoteSteam
+  setRemoteSteam,
+  setIsProducer
 } = sessionSlice.actions;
 export const sessionReducer = sessionSlice.reducer;

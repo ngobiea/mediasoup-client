@@ -6,7 +6,7 @@ import { Device } from 'mediasoup-client';
 import { logoutHandler } from '../utils/util';
 import { useSelector, useDispatch } from 'react-redux';
 import { params } from '../utils/mediasoup/params';
-import { setRemoteSteam } from '../store';
+import { setRemoteSteam, setIsProducer } from '../store';
 
 const userDetails = JSON.parse(localStorage.getItem('user'));
 let producerTransport;
@@ -75,13 +75,12 @@ const RealtimeProvider = ({ children }) => {
           console.log(serverParams.error);
           return;
         }
-
         console.log(serverParams);
 
         producerTransport = device.createSendTransport(serverParams);
+
         console.log('new producer transport');
         console.log(producerTransport);
-
         producerTransport.on(
           'connect',
           async ({ dtlsParameters }, callback, errback) => {
@@ -119,6 +118,8 @@ const RealtimeProvider = ({ children }) => {
             }
           }
         );
+
+        connectSendTransport();
       }
     );
   };
@@ -183,6 +184,7 @@ const RealtimeProvider = ({ children }) => {
             }
           }
         );
+        connectRecvTransport()
       }
     );
   };
@@ -218,9 +220,8 @@ const RealtimeProvider = ({ children }) => {
     createDevice,
     createSendTransport,
     isDevice,
-    connectSendTransport,
     createRecvTransport,
-    connectRecvTransport,
+  
   };
 
   return (
