@@ -12,16 +12,17 @@ const sessionSlice = createSlice({
     activeBorder: '',
     isJoinedSession: false,
     isProducer: false,
-    audioInputDevices: [],
-    audioOutputDevices: [],
-    videoOutputDevices: [],
     defaultAudioInputDevice: null,
     defaultAudioOutputDevice: null,
     defaultVideoOutputDevice: null,
     localStream: null,
     remoteStream: null,
     remoteStreams: [],
-    audioParams: { params },
+    audioInputDevices: [],
+    audioOutputDevices: [],
+    videoOutputDevices: [],
+    consumerTransports: [],
+    audioParams: null,
     videoParams: { params },
   },
   reducers: {
@@ -107,6 +108,9 @@ const sessionSlice = createSlice({
     setIsProducer(state, action) {
       state.isProducer = action.payload;
     },
+    addConsumerTransports(state, action) {
+      state.consumerTransports.push(action.payload);
+    },
   },
 });
 
@@ -126,6 +130,6 @@ export const {
   addRemoteStream,
   setMediaStreams,
   setRemoteSteam,
-  setIsProducer
+  setIsProducer,
 } = sessionSlice.actions;
 export const sessionReducer = sessionSlice.reducer;

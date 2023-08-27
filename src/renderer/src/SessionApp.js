@@ -7,8 +7,10 @@ import ProducerConsumer from './pages/SessionPages/ProducerConsumer';
 import RealtimeContext from './context/realtimeContext';
 const SessionApp = () => {
   const { createDevice, socket, isDevice } = useContext(RealtimeContext);
+  const sessionId = localStorage.getItem('sessionId');
+
   useEffect(() => {
-    socket.emit('createSession', ({ rtpCapabilities }) => {
+    socket.emit('createSession',{sessionId}, ({ rtpCapabilities }) => {
       createDevice(rtpCapabilities);
     });
   }, []);

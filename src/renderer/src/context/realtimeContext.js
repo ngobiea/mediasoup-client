@@ -6,15 +6,18 @@ import { Device } from 'mediasoup-client';
 import { logoutHandler } from '../utils/util';
 import { useSelector, useDispatch } from 'react-redux';
 import { params } from '../utils/mediasoup/params';
+
 import { setRemoteSteam, setIsProducer } from '../store';
 
 const userDetails = JSON.parse(localStorage.getItem('user'));
 let producerTransport;
-let consumerTransport;
+let consumerTransports = [];
 let audioProducer;
 let videoProducer;
 let consumer;
 let socket;
+let consumingTransports = [];
+
 if (userDetails) {
   socket = io('http://localhost:8080', {
     auth: {
@@ -28,7 +31,7 @@ const RealtimeContext = createContext();
 const RealtimeProvider = ({ children }) => {
   const dispatch = useDispatch();
   const [isDevice, setIsDevice] = useState(false);
-  const { videoParams } = useSelector((state) => {
+  const { videoParams, audioParams } = useSelector((state) => {
     return state.session;
   });
   const connectWithSocketServer = () => {
@@ -43,6 +46,17 @@ const RealtimeProvider = ({ children }) => {
       console.log(err instanceof Error);
       console.log(err.message);
       console.log(err.data);
+    });
+    socket.on('producer-close', ({ remoteProducerId }) => {
+      const producerToClose = consumerTransports.find(
+        (transportData) => transportData.producerId === remoteProducerId
+      );
+      producerToClose.consumerTransport.close();
+      producerToClose.consumer.close();
+
+      consumerTransports = consumerTransports.filter(
+        (transportData) => transportData.producerId !== remoteProducerId
+      );
     });
   };
 
@@ -69,7 +83,7 @@ const RealtimeProvider = ({ children }) => {
   const createSendTransport = () => {
     socket.emit(
       'createWebRtcTransport',
-      { sender: true },
+      { consumer: false },
       ({ serverParams }) => {
         if (serverParams.error) {
           console.log(serverParams.error);
@@ -94,11 +108,11 @@ const RealtimeProvider = ({ children }) => {
             }
           }
         );
+
         producerTransport.on(
           'produce',
           async (parameters, callback, errback) => {
             console.log(parameters);
-
             try {
               await socket.emit(
                 'transport-produce',
@@ -107,10 +121,14 @@ const RealtimeProvider = ({ children }) => {
                   rtpParameters: parameters.rtpParameters,
                   appData: parameters.appData,
                 },
-                ({ id }) => {
+                ({ id, producersExist }) => {
                   // Tell the transport that parameters were transmitted and provide it with the
                   // server side producer's id.
                   callback({ id });
+
+                  if (producersExist) {
+                    getProducers();
+                  }
                 }
               );
             } catch (error) {
@@ -118,7 +136,6 @@ const RealtimeProvider = ({ children }) => {
             }
           }
         );
-
         connectSendTransport();
       }
     );
@@ -126,21 +143,22 @@ const RealtimeProvider = ({ children }) => {
 
   const connectSendTransport = async () => {
     try {
-      // audioProducer = await producerTransport.produce(state.audioParams);
+      audioProducer = await producerTransport.produce(audioParams);
       videoProducer = await producerTransport.produce(videoParams);
+
       console.log('video producer created');
       console.log(videoProducer);
-      // audioProducer.on('trackended', () => {
-      //   console.log('audio track ended');
+      audioProducer.on('trackended', () => {
+        console.log('audio track ended');
 
-      //   // close audio track
-      // });
+        // close audio track
+      });
 
-      // audioProducer.on('transportclose', () => {
-      //   console.log('audio transport ended');
+      audioProducer.on('transportclose', () => {
+        console.log('audio transport ended');
 
-      //   // close audio track
-      // });
+        // close audio track
+      });
 
       videoProducer.on('trackended', () => {
         console.log('video track ended');
@@ -156,6 +174,52 @@ const RealtimeProvider = ({ children }) => {
       console.log('Error occur when producing transport');
       console.log(error);
     }
+  };
+  const signalNewConsumerTransport = async (remoteProducerId) => {
+    if (consumingTransports.includes(remoteProducerId)) {
+      return;
+    }
+    consumingTransports.push(remoteProducerId);
+    
+    await socket.emit(
+      'createWebRtcTransport',
+      { consumer: true },
+      ({ serverParams }) => {
+        if (serverParams.error) {
+          console.log(serverParams.error);
+          return;
+        }
+        console.log('PARAMS...', serverParams);
+
+        let consumerTransport;
+        try {
+          consumerTransport = device.createRecvTransport(params);
+        } catch (error) {
+          console.log(error);
+          return;
+        }
+
+        consumerTransport.on(
+          'connect',
+          async ({ dtlsParameters }, callback, errback) => {
+            try {
+              await socket.emit('transport-recv-connect', {
+                dtlsParameters,
+                serverConsumerTransportId: params.id,
+              });
+              callback();
+            } catch (error) {
+              errback(error);
+            }
+          }
+        );
+        connectRecvTransport(
+          consumerTransport,
+          remoteProducerId,
+          serverParams.id
+        );
+      }
+    );
   };
 
   const createRecvTransport = async () => {
@@ -184,16 +248,22 @@ const RealtimeProvider = ({ children }) => {
             }
           }
         );
-        connectRecvTransport()
+        connectRecvTransport();
       }
     );
   };
 
-  const connectRecvTransport = async () => {
+  const connectRecvTransport = async (
+    consumerTransport,
+    remoteProducerId,
+    serverConsumerTransportId
+  ) => {
     await socket.emit(
       'consume',
       {
         rtpCapabilities: device.rtpCapabilities,
+        remoteProducerId,
+        serverConsumerTransportId,
       },
       async ({ serverParams }) => {
         if (serverParams.error) {
@@ -208,11 +278,33 @@ const RealtimeProvider = ({ children }) => {
           kind: serverParams.kind,
           rtpParameters: serverParams.rtpParameters,
         });
-        const { track } = consumer;
-        dispatch(setRemoteSteam(new MediaStream([track])));
-        socket.emit('consumer-resume');
+
+        consumerTransports = [
+          ...consumerTransports,
+          {
+            consumerTransport,
+            serverConsumerTransportId: serverParams.id,
+            producerId: remoteProducerId,
+            consumer,
+          },
+        ];
+
+        // const { track } = consumer;
+        // dispatch(setRemoteSteam(new MediaStream([track])));
+        // socket.emit('consumer-resume');
+
+        socket.emit('consumer-resume', {
+          serverConsumerId: serverParams.serverConsumerId,
+        });
       }
     );
+  };
+
+  const getProducers = () => {
+    socket.emit('getProducers', (producerIds) => {
+      console.log(producerIds);
+      producerIds.forEach(signalNewConsumerTransport);
+    });
   };
 
   const values = {
@@ -221,7 +313,6 @@ const RealtimeProvider = ({ children }) => {
     createSendTransport,
     isDevice,
     createRecvTransport,
-  
   };
 
   return (
