@@ -25,7 +25,7 @@ const ClassSessionSetup = () => {
   const videoRef = useRef();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { socket} = useContext(RealtimeContext);
+  const { socket } = useContext(RealtimeContext);
 
   const {
     isMicEnable,
@@ -40,9 +40,10 @@ const ClassSessionSetup = () => {
   } = useSelector((state) => {
     return state.session;
   });
+  const session = localStorage.getItem('sessionId');
 
   const handleToClassSession = () => {
-    navigate('pc');
+    navigate('/' + session);
   };
   const handleMic = (e) => {
     const value = e.target.checked;
@@ -51,7 +52,6 @@ const ClassSessionSetup = () => {
   const handleCancel = () => {
     ipcRenderer.send('closeSessionWindow');
   };
-  const session = localStorage.getItem('sessionId');
 
   const joinClassSession = (sessionId) => {
     console.log('sessionId:', sessionId);
@@ -168,7 +168,7 @@ const ClassSessionSetup = () => {
               Choose a microphone
             </label>
             <select
-              value={defaultAudioInputDevice ? defaultAudioInputDevice : ''}
+              value={defaultAudioInputDevice || ''}
               onChange={handleAudioInputChange}
               className="block py-2.5 px-0 w-96 text-sm text-green-800 bg-transparent border-0 border-b-2 border-green-500 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
             >
@@ -185,7 +185,7 @@ const ClassSessionSetup = () => {
           <div className="ml-20 relative">
             <label className="text-green-800 font-bold">Choose a Speaker</label>
             <select
-              value={defaultAudioOutputDevice ? defaultAudioOutputDevice : ''}
+              value={defaultAudioOutputDevice || ''}
               onChange={handleAudioOutputChange}
               className="block py-2.5 px-0 w-96 text-sm text-green-800 bg-transparent border-0 border-b-2 border-green-500 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
             >
@@ -202,7 +202,7 @@ const ClassSessionSetup = () => {
           <div className="ml-20 relative">
             <label className="text-green-800 font-bold">Choose a Camera</label>
             <select
-              value={defaultVideoOutputDevice ? defaultVideoOutputDevice : ''}
+              value={defaultVideoOutputDevice || ''}
               onChange={handleVideoChange}
               className="block py-2.5 px-0 w-96 text-sm text-green-800 bg-transparent border-0 border-b-2 border-green-500 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
             >
