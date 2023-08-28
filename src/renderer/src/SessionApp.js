@@ -10,7 +10,7 @@ const SessionApp = () => {
   const sessionId = localStorage.getItem('sessionId');
 
   useEffect(() => {
-    socket.emit('createSession',{sessionId}, ({ rtpCapabilities }) => {
+    socket.emit('createSession', { sessionId }, ({ rtpCapabilities }) => {
       createDevice(rtpCapabilities);
     });
   }, []);

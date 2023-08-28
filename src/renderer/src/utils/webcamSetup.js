@@ -11,19 +11,20 @@ export const onWebCam = (audio, video) => {
 
   navigator.mediaDevices
     .getUserMedia({
-      video:defaultVideoOutputDevice? {
-        deviceId: { ideal: defaultVideoOutputDevice },
-        width: {
-          min: 560,
-          max: 1920,
-        },
-        height: {
-          min: 400,
-          max: 1080,
-        },
-      }:undefined,
-      audio: false,
-      
+      video: defaultVideoOutputDevice
+        ? {
+            deviceId: { ideal: defaultVideoOutputDevice },
+            width: {
+              min: 560,
+              max: 1920,
+            },
+            height: {
+              min: 400,
+              max: 1080,
+            },
+          }
+        : undefined,
+      audio: true,
     })
     .then((stream) => {
       store.dispatch(setLocalStream(stream));
@@ -55,7 +56,7 @@ export const setUpWebCam = () => {
             },
           }
         : undefined,
-      audio: false,
+      audio: true,
     })
     .then((stream) => {
       store.dispatch(setVideoEnable(true));

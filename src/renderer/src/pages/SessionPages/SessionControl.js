@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import {
   MdOutlineChat,
   MdPeopleOutline,
@@ -10,6 +10,7 @@ import {
   MdStopScreenShare,
   MdOutlineKeyboardArrowDown,
 } from 'react-icons/md';
+import RealtimeContext from '../../context/realtimeContext';
 import {
   setIsShareScreen,
   setIsShowParticipants,
@@ -32,6 +33,7 @@ import { ipcRenderer } from 'electron';
 
 const SessionControl = () => {
   const dispatch = useDispatch();
+  const { connectSendTransport } = useContext(RealtimeContext);
 
   const {
     isMicEnable,
@@ -47,10 +49,13 @@ const SessionControl = () => {
   });
 
   useEffect(() => {
-    if (isMicEnable || isVideoEnable) {
-      onWebCam(isMicEnable, isVideoEnable);
+    if (localStream) {
+      connectSendTransport()
     }
-  }, []);
+    if (isMicEnable || isVideoEnable) {
+      // onWebCam(isMicEnable, isVideoEnable);
+    }
+  }, [localStream]);
 
   const handleRecoding = () => {
     if (isRecording) {

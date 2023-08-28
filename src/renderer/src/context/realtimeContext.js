@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 
 import io from 'socket.io-client';
 import { Device } from 'mediasoup-client';
@@ -7,7 +7,6 @@ import { logoutHandler } from '../utils/util';
 import { useSelector, useDispatch } from 'react-redux';
 import { params } from '../utils/mediasoup/params';
 
-import { setRemoteSteam, setIsProducer } from '../store';
 
 const userDetails = JSON.parse(localStorage.getItem('user'));
 let producerTransport;
@@ -16,7 +15,7 @@ let audioProducer;
 let videoProducer;
 let consumer;
 let socket;
-let consumingTransports = [];
+const consumingTransports = [];
 
 if (userDetails) {
   socket = io('http://localhost:8080', {
@@ -58,6 +57,10 @@ const RealtimeProvider = ({ children }) => {
         (transportData) => transportData.producerId !== remoteProducerId
       );
     });
+
+    socket.on('new-producer', ({ producerId }) => {
+      signalNewConsumerTransport(producerId);
+    });
   };
 
   useEffect(() => {
@@ -72,6 +75,7 @@ const RealtimeProvider = ({ children }) => {
       await device.load({ routerRtpCapabilities: rtpCapabilities });
       console.log('Device RTP Capabilities', device.rtpCapabilities);
       setIsDevice(true);
+      createSendTransport()
     } catch (error) {
       console.log(error);
       if (error.name === 'UnsupportedError') {
@@ -136,7 +140,6 @@ const RealtimeProvider = ({ children }) => {
             }
           }
         );
-        connectSendTransport();
       }
     );
   };
@@ -180,7 +183,7 @@ const RealtimeProvider = ({ children }) => {
       return;
     }
     consumingTransports.push(remoteProducerId);
-    
+
     await socket.emit(
       'createWebRtcTransport',
       { consumer: true },
@@ -313,6 +316,7 @@ const RealtimeProvider = ({ children }) => {
     createSendTransport,
     isDevice,
     createRecvTransport,
+    connectSendTransport,
   };
 
   return (

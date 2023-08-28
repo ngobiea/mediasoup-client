@@ -40,9 +40,10 @@ const ClassSessionSetup = () => {
   } = useSelector((state) => {
     return state.session;
   });
+  const session = localStorage.getItem('sessionId');
 
   const handleToClassSession = () => {
-    navigate('pc');
+    navigate('/' + session);
   };
   const handleMic = (e) => {
     const value = e.target.checked;
@@ -51,7 +52,6 @@ const ClassSessionSetup = () => {
   const handleCancel = () => {
     ipcRenderer.send('closeSessionWindow');
   };
-  const session = localStorage.getItem('sessionId');
 
   const joinClassSession = (sessionId) => {
     console.log('sessionId:', sessionId);
