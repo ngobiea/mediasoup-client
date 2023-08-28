@@ -6,8 +6,7 @@ import { Device } from 'mediasoup-client';
 import { logoutHandler } from '../utils/util';
 import { useSelector, useDispatch } from 'react-redux';
 import { params } from '../utils/mediasoup/params';
-
-
+import { addRemoteStream, setRemoteSteam } from '../store';
 const userDetails = JSON.parse(localStorage.getItem('user'));
 let producerTransport;
 let consumerTransports = [];
@@ -75,7 +74,7 @@ const RealtimeProvider = ({ children }) => {
       await device.load({ routerRtpCapabilities: rtpCapabilities });
       console.log('Device RTP Capabilities', device.rtpCapabilities);
       setIsDevice(true);
-      createSendTransport()
+      createSendTransport();
     } catch (error) {
       console.log(error);
       if (error.name === 'UnsupportedError') {
@@ -224,38 +223,6 @@ const RealtimeProvider = ({ children }) => {
       }
     );
   };
-
-  const createRecvTransport = async () => {
-    await socket.emit(
-      'createWebRtcTransport',
-      { sender: false },
-      ({ serverParams }) => {
-        if (serverParams.error) {
-          console.log(serverParams.error);
-          return;
-        }
-
-        console.log(params);
-        consumerTransport = device.createRecvTransport(serverParams);
-        console.log('new consumer transport created');
-        consumerTransport.on(
-          'connect',
-          async ({ dtlsParameters }, callback, errback) => {
-            try {
-              await socket.emit('transport-recv-connect', {
-                dtlsParameters,
-              });
-              callback();
-            } catch (error) {
-              errback(error);
-            }
-          }
-        );
-        connectRecvTransport();
-      }
-    );
-  };
-
   const connectRecvTransport = async (
     consumerTransport,
     remoteProducerId,
@@ -286,15 +253,17 @@ const RealtimeProvider = ({ children }) => {
           ...consumerTransports,
           {
             consumerTransport,
+            consumer,
             serverConsumerTransportId: serverParams.id,
             producerId: remoteProducerId,
-            consumer,
           },
         ];
 
-        // const { track } = consumer;
+        const { track } = consumer;
         // dispatch(setRemoteSteam(new MediaStream([track])));
         // socket.emit('consumer-resume');
+        const remoteStream = new MediaStream([track]);
+        dispatch(setRemoteSteam({ remoteProducerId, remoteStream }));
 
         socket.emit('consumer-resume', {
           serverConsumerId: serverParams.serverConsumerId,
@@ -315,7 +284,6 @@ const RealtimeProvider = ({ children }) => {
     createDevice,
     createSendTransport,
     isDevice,
-    createRecvTransport,
     connectSendTransport,
   };
 

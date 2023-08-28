@@ -1,20 +1,13 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-import RealtimeContext from '../../context/realtimeContext';
 import { useSelector } from 'react-redux';
 import SessionControl from './SessionControl';
 import SessionView from './SessionView';
 const ClassSession = () => {
-  
-
-  const {
-    localStream,
-  } = useSelector((state) => {
+  const { localStream } = useSelector((state) => {
     return state.session;
   });
-  useEffect(() => {
-  
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <>

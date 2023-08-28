@@ -1,8 +1,8 @@
-import React, { useContext,useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { setUpWebCam, offWebCam, onWebCam } from '../../utils/webcamSetup';
-
+import RemoteUser from './RemoteUser';
 const SessionView = () => {
   const videoRef = useRef();
 
@@ -17,6 +17,7 @@ const SessionView = () => {
     isRecording,
     activeBorder,
     localStream,
+    remoteStreams,
   } = useSelector((state) => {
     return state.session;
   });
@@ -48,88 +49,14 @@ const SessionView = () => {
         }
       >
         <div className="grid grid-cols-2 md:grid-cols-5 gap-1">
-          <div>
-            <video
-              className="h-auto bg-blue-900 max-w-full "
-              // ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              className="h-auto bg-blue-900 max-w-full "
-              // ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              // ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              // ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
-          <div>
-            <video
-              autoPlay
-              className="h-auto bg-blue-900 max-w-full "
-              ref={videoRef}
-            ></video>
-          </div>
+          {remoteStreams.map((stream) => {
+            return (
+              <RemoteUser
+                key={stream.remoteProducerId}
+                track={stream.remoteStream}
+              />
+            );
+          })}
         </div>
 
         <div className="absolute bottom-0 right-0  h-60  w-72 bg-blue-900">
