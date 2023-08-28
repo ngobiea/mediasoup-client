@@ -168,7 +168,7 @@ const ClassSessionSetup = () => {
               Choose a microphone
             </label>
             <select
-              value={defaultAudioInputDevice ? defaultAudioInputDevice : ''}
+              value={defaultAudioInputDevice || ''}
               onChange={handleAudioInputChange}
               className="block py-2.5 px-0 w-96 text-sm text-green-800 bg-transparent border-0 border-b-2 border-green-500 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
             >
@@ -185,7 +185,7 @@ const ClassSessionSetup = () => {
           <div className="ml-20 relative">
             <label className="text-green-800 font-bold">Choose a Speaker</label>
             <select
-              value={defaultAudioOutputDevice ? defaultAudioOutputDevice : ''}
+              value={defaultAudioOutputDevice || ''}
               onChange={handleAudioOutputChange}
               className="block py-2.5 px-0 w-96 text-sm text-green-800 bg-transparent border-0 border-b-2 border-green-500 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
             >
@@ -202,7 +202,7 @@ const ClassSessionSetup = () => {
           <div className="ml-20 relative">
             <label className="text-green-800 font-bold">Choose a Camera</label>
             <select
-              value={defaultVideoOutputDevice ? defaultVideoOutputDevice : ''}
+              value={defaultVideoOutputDevice || ''}
               onChange={handleVideoChange}
               className="block py-2.5 px-0 w-96 text-sm text-green-800 bg-transparent border-0 border-b-2 border-green-500 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
             >
