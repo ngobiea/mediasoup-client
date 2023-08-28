@@ -5,7 +5,6 @@ import { Device } from 'mediasoup-client';
 
 import { logoutHandler } from '../utils/util';
 import { useSelector, useDispatch } from 'react-redux';
-import { params } from '../utils/mediasoup/params';
 import { addRemoteStream, setRemoteSteam } from '../store';
 const userDetails = JSON.parse(localStorage.getItem('user'));
 let producerTransport;
@@ -195,7 +194,7 @@ const RealtimeProvider = ({ children }) => {
 
         let consumerTransport;
         try {
-          consumerTransport = device.createRecvTransport(params);
+          consumerTransport = device.createRecvTransport(serverParams);
         } catch (error) {
           console.log(error);
           return;
@@ -207,7 +206,7 @@ const RealtimeProvider = ({ children }) => {
             try {
               await socket.emit('transport-recv-connect', {
                 dtlsParameters,
-                serverConsumerTransportId: params.id,
+                serverConsumerTransportId: serverParams.id,
               });
               callback();
             } catch (error) {
@@ -263,7 +262,7 @@ const RealtimeProvider = ({ children }) => {
         // dispatch(setRemoteSteam(new MediaStream([track])));
         // socket.emit('consumer-resume');
         const remoteStream = new MediaStream([track]);
-        dispatch(setRemoteSteam({ remoteProducerId, remoteStream }));
+        dispatch(addRemoteStream({ remoteProducerId, remoteStream }));
 
         socket.emit('consumer-resume', {
           serverConsumerId: serverParams.serverConsumerId,
