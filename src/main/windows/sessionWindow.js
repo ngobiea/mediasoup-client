@@ -8,7 +8,6 @@ exports.createSessionWindow = (isShow) => {
     width: width,
     height: height,
     webPreferences: {
-      // preload: path.join(__dirname, '../../preload/preload.js'),
       nodeIntegration: true,
       contextIsolation: false,
     },
